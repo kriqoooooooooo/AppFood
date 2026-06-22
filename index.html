@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FastFood — Sistema de Pedidos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --brand: #E8420A;
+    --brand-dark: #B83208;
+    --brand-light: #FFF0EB;
+    --brand-mid: #F97340;
+    --bg: #F5F3EF;
+    --surface: #FFFFFF;
+    --surface2: #F9F8F6;
+    --border: #E8E5DF;
+    --border2: #D4CFC7;
+    --text: #1A1714;
+    --text2: #5C5751;
+    --text3: #9A9590;
+    --green: #0B7A5E;
+    --green-bg: #E6F4F0;
+    --red: #C0392B;
+    --red-bg: #FDEDEB;
+    --blue: #1A56DB;
+    --blue-bg: #EBF0FD;
+    --yellow: #92400e;
+    --yellow-bg: #FEF3C7;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.10);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .nav-brand {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--brand);
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-actions { display: flex; gap: 10px; align-items: center; }
+  .nav-badge {
+    background: var(--brand-light);
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .nav-role-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .nav-role-admin { background: var(--blue-bg); color: var(--blue); }
+  .nav-role-cajero { background: var(--green-bg); color: var(--green); }
+
+  /* LAYOUT */
+  .container { max-width: 1080px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ═══════════════════════════════════
+     LOGIN
+  ═══════════════════════════════════ */
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 2rem;
+  }
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+  .login-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--brand) 0%, var(--brand-mid) 100%);
+  }
+  .login-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .login-logo .logo-icon { font-size: 48px; display: block; margin-bottom: 8px; }
+  .login-logo h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--brand);
+    letter-spacing: -0.5px;
+  }
+  .login-logo p { font-size: 13px; color: var(--text3); margin-top: 4px; }
+  .login-role-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+  }
+  .role-tab {
+    padding: 10px;
+    border: 2px solid var(--border2);
+    border-radius: var(--radius);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    background: var(--surface);
+  }
+  .role-tab:hover { border-color: var(--brand); color: var(--brand); }
+  .role-tab.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); font-weight: 600; }
+  .role-tab .role-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .login-err {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid #f5c6c2;
+    border-radius: var(--radius);
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  /* STEP BAR */
+  .steps {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+  }
+  .step-item {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text3);
+    border-right: 1px solid var(--border);
+    position: relative;
+    transition: background 0.2s;
+  }
+  .step-item:last-child { border-right: none; }
+  .step-item.active { background: var(--brand-light); color: var(--brand); font-weight: 600; }
+  .step-item.done { background: var(--green-bg); color: var(--green); font-weight: 500; }
+  .step-num {
+    display: inline-flex;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    background: currentColor;
+    color: white;
+    margin-right: 6px;
+    vertical-align: middle;
+    opacity: 0.8;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.25rem;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon { font-size: 18px; }
+
+  /* HERO REGISTRO */
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--brand) 0%, var(--brand-mid) 100%);
+  }
+  .hero-emoji { font-size: 56px; display: block; margin-bottom: 1rem; }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+  .hero p { color: var(--text2); font-size: 15px; }
+
+  /* FORM */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 580px) { .form-row { grid-template-columns: 1fr; } }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 5px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    appearance: none;
+  }
+  .form-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235C5751' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(232,66,10,0.12);
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .btn:hover { background: var(--surface2); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--brand); border-color: var(--brand); color: white; }
+  .btn-primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+  .btn-success { background: var(--green); border-color: var(--green); color: white; }
+  .btn-success:hover { background: #095f48; }
+  .btn-danger { background: var(--red); border-color: var(--red); color: white; }
+  .btn-danger:hover { background: #a93226; }
+  .btn-blue { background: var(--blue); border-color: var(--blue); color: white; }
+  .btn-blue:hover { background: #1648c0; }
+  .btn-outline-brand { border-color: var(--brand); color: var(--brand); background: transparent; }
+  .btn-outline-brand:hover { background: var(--brand-light); }
+  .btn-lg { padding: 13px 26px; font-size: 15px; border-radius: var(--radius-lg); }
+  .btn-block { width: 100%; justify-content: center; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* MENU LAYOUT */
+  .menu-layout { display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; align-items: start; }
+  @media (max-width: 720px) { .menu-layout { grid-template-columns: 1fr; } }
+
+  /* PRODUCT GRID */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .product-card:hover { border-color: var(--brand); box-shadow: 0 2px 8px rgba(232,66,10,0.12); transform: translateY(-1px); }
+  .product-card.selected { border-color: var(--brand); border-width: 2px; background: var(--brand-light); }
+  .product-card .p-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+  .product-card .p-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+  .product-card .p-price { font-size: 13px; font-weight: 600; color: var(--brand); }
+  .product-card .qty-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; justify-content: center; }
+  .qty-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+    line-height: 1;
+  }
+  .qty-btn:hover { background: var(--surface2); }
+  .qty-num { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 10px;
+    margin-top: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .section-label:first-of-type { margin-top: 0; }
+
+  /* CART */
+  .cart-sticky { position: sticky; top: 76px; }
+  .cart-empty { text-align: center; padding: 1.5rem; color: var(--text3); }
+  .cart-empty-icon { font-size: 32px; display: block; margin-bottom: 8px; }
+  .cart-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .cart-item:last-child { border-bottom: none; }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cart-item-price { font-size: 12px; color: var(--text3); }
+  .remove-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; padding: 2px; transition: color 0.1s; }
+  .remove-btn:hover { color: var(--red); }
+
+  /* TOTALS */
+  .total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; color: var(--text2); }
+  .total-row.grand { font-size: 16px; font-weight: 600; color: var(--text); border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px; }
+
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .badge-brand { background: var(--brand-light); color: var(--brand); }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-gray { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue); }
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+
+  /* RESUMEN LAYOUT */
+  .resumen-layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
+  @media (max-width: 720px) { .resumen-layout { grid-template-columns: 1fr; } }
+
+  /* CAMBIO BOX */
+  .cambio-ok { color: var(--green); font-size: 13px; font-weight: 600; margin-top: 6px; }
+  .cambio-err { color: var(--red); font-size: 13px; font-weight: 500; margin-top: 6px; }
+
+  /* INVOICE */
+  .invoice-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    max-width: 680px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .invoice-top {
+    background: var(--brand);
+    padding: 1.5rem 2rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .invoice-logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .invoice-logo-sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+  .invoice-meta-right { text-align: right; font-size: 13px; opacity: 0.9; }
+  .invoice-meta-num { font-size: 18px; font-weight: 700; opacity: 1; }
+  .invoice-body { padding: 1.75rem 2rem; }
+  .invoice-client-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 1.5rem;
+    font-size: 13px;
+  }
+  .invoice-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 1.25rem; }
+  .invoice-table th {
+    background: var(--surface2);
+    padding: 9px 10px;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  .invoice-table th:last-child, .invoice-table td:last-child { text-align: right; }
+  .invoice-table td { padding: 10px 10px; border-bottom: 1px solid var(--border); }
+  .invoice-table tr:last-child td { border-bottom: none; }
+  .invoice-totals { max-width: 240px; margin-left: auto; }
+  .invoice-footer {
+    border-top: 1px solid var(--border);
+    padding: 14px 2rem;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text3);
+    background: var(--surface2);
+  }
+  .invoice-notes {
+    background: #FFF9E6;
+    border: 1px solid #F0D98B;
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #7A6200;
+    margin-bottom: 1.25rem;
+  }
+
+  /* HISTORIAL */
+  .hist-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  @media (max-width: 500px) { .hist-metrics { grid-template-columns: 1fr 1fr; } }
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; text-align: center; box-shadow: var(--shadow); }
+  .metric-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); margin-bottom: 6px; }
+  .metric-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--text); }
+  .metric-value.brand { color: var(--brand); }
+  .hist-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .hist-row:last-child { border-bottom: none; }
+  .hist-row:hover { background: var(--surface2); margin: 0 -1.5rem; padding: 14px 1.5rem; border-radius: var(--radius); }
+  .hist-info .name { font-size: 14px; font-weight: 500; }
+  .hist-info .meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .hist-right { display: flex; align-items: center; gap: 10px; }
+  .hist-amount { font-size: 14px; font-weight: 600; color: var(--brand); }
+  .no-hist { text-align: center; padding: 3rem; color: var(--text3); }
+  .no-hist-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s;
+    pointer-events: none;
+    box-shadow: var(--shadow-lg);
+    max-width: 300px;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.ok { background: var(--green); color: white; }
+  #toast.err { background: var(--red); color: white; }
+
+  /* PRINT */
+  @media print {
+    nav, .steps, .btn, #toast, .no-print { display: none !important; }
+    .invoice-wrap { box-shadow: none; border: 1px solid #ccc; }
+    body { background: white; }
+  }
+
+  /* BACK LINK */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text2);
+    font-size: 13px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    margin-bottom: 1.25rem;
+    transition: color 0.1s;
+    font-family: 'Inter', sans-serif;
+  }
+  .back-link:hover { color: var(--brand); }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 2.5rem; color: var(--text3); }
+  .empty-icon { font-size: 36px; display: block; margin-bottom: 10px; }
+
+  /* ═══════════════════════════════════
+     ADMIN PANEL
+  ═══════════════════════════════════ */
+  .admin-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 720px) { .admin-layout { grid-template-columns: 1fr; } }
+
+  .admin-sidebar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 76px;
+  }
+  .admin-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 4px;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+  }
+  .admin-nav-item:hover { background: var(--surface2); color: var(--text); }
+  .admin-nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 600; }
+  .admin-nav-item .nav-icon { font-size: 16px; }
+  .admin-nav-sep { height: 1px; background: var(--border); margin: 8px 0; }
+
+  .admin-panel { display: none; }
+  .admin-panel.active { display: block; }
+
+  /* INVENTARIO TABLE */
+  .inv-table-wrap { overflow-x: auto; }
+  .inv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .inv-table th {
+    background: var(--surface2);
+    padding: 10px 12px;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    white-space: nowrap;
+  }
+  .inv-table td {
+    padding: 12px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .inv-table tr:last-child td { border-bottom: none; }
+  .inv-table tr:hover td { background: var(--surface2); }
+  .inv-row-actions { display: flex; gap: 6px; }
+
+  .stock-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .stock-ok { background: var(--green-bg); color: var(--green); }
+  .stock-low { background: var(--yellow-bg); color: var(--yellow); }
+  .stock-out { background: var(--red-bg); color: var(--red); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text2);
+    transition: all 0.1s;
+  }
+  .modal-close:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+
+  /* ADMIN METRICS */
+  .admin-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  @media (max-width: 800px) { .admin-metrics { grid-template-columns: repeat(2, 1fr); } }
+
+  /* PRODUCT CATEGORY TABS */
+  .cat-tabs { display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .cat-tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text2);
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .cat-tab:hover { border-color: var(--brand); color: var(--brand); }
+  .cat-tab.active { background: var(--brand); border-color: var(--brand); color: white; }
+
+  /* CONFIRM BOX */
+  .confirm-box {
+    background: var(--red-bg);
+    border: 1px solid #f5c6c2;
+    border-radius: var(--radius);
+    padding: 14px;
+    font-size: 13px;
+    color: var(--red);
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .confirm-box.open { display: block; }
+
+  /* USUARIOS */
+  .user-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .user-row:last-child { border-bottom: none; }
+  .user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .avatar-admin { background: var(--blue-bg); }
+  .avatar-cajero { background: var(--green-bg); }
+  .user-info { flex: 1; }
+  .user-info .uname { font-size: 14px; font-weight: 500; }
+  .user-info .umeta { font-size: 12px; color: var(--text3); margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════
+     PANTALLA LOGIN
+═══════════════════════════════════ -->
+<div id="screen-login" class="screen active" style="background:var(--bg); min-height:100vh;">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">
+        <span class="logo-icon">🍔</span>
+        <h1>FastFood</h1>
+        <p>Sistema de Pedidos — Ingresa con tu cuenta</p>
+      </div>
+      <div class="login-role-tabs">
+        <div class="role-tab active" onclick="selectRole('admin')" id="tab-admin">
+          <span class="role-icon">🛡️</span>
+          Administrador
+        </div>
+        <div class="role-tab" onclick="selectRole('cajero')" id="tab-cajero">
+          <span class="role-icon">💳</span>
+          Cajero
+        </div>
+      </div>
+      <div class="login-err" id="login-err">Usuario o contraseña incorrectos</div>
+      <div class="form-group">
+        <label for="inp-user">Usuario</label>
+        <input type="text" id="inp-user" placeholder="Ej: admin" autocomplete="off" onkeydown="if(event.key==='Enter') doLogin()" />
+      </div>
+      <div class="form-group">
+        <label for="inp-pass">Contraseña</label>
+        <input type="password" id="inp-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()" />
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" onclick="doLogin()">Ingresar →</button>
+      <div style="margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid var(--border); font-size:12px; color:var(--text3);">
+        <strong>Demo:</strong> Admin → admin / admin123 &nbsp;|&nbsp; Cajero → cajero / cajero123
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     NAV (visible después de login)
+═══════════════════════════════════ -->
+<nav id="main-nav" style="display:none;">
+  <div class="nav-brand">🍔 FastFood</div>
+  <div class="nav-actions">
+    <span class="nav-badge" id="nav-cliente" style="display:none;"></span>
+    <span id="nav-role-badge" class="nav-role-badge"></span>
+    <span id="nav-username" style="font-size:13px; color:var(--text2); font-weight:500;"></span>
+    <!-- Solo cajero ve Historial rápido -->
+    <button class="btn btn-sm" id="nav-historial-btn" onclick="showHistorial()" style="font-size:13px; display:none;">📋 Historial</button>
+    <!-- Admin ve Panel Admin -->
+    <button class="btn btn-sm btn-blue" id="nav-admin-btn" onclick="goTo('screen-admin')" style="font-size:13px; display:none;">⚙️ Admin</button>
+    <button class="btn btn-sm btn-outline-brand" id="nav-cajero-btn" onclick="goTo('screen-registro')" style="font-size:13px; display:none;">🧾 Caja</button>
+    <button class="btn btn-sm" onclick="logout()" style="font-size:13px;">Salir</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════
+     REGISTRO (Cajero + Admin)
+═══════════════════════════════════ -->
+<div id="screen-registro" class="screen">
+  <div class="container" style="max-width:560px;">
+    <div class="hero">
+      <span class="hero-emoji">🍔</span>
+      <h1>Nuevo Pedido</h1>
+      <p>Ingresa los datos del cliente para comenzar</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">👤</span> Datos del cliente</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inp-nombre">Nombre completo</label>
+          <input type="text" id="inp-nombre" placeholder="Ej: Carlos Pérez" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label for="inp-mesa">Mesa / Entrega</label>
+          <select id="inp-mesa">
+            <option value="Para llevar">🛍 Para llevar</option>
+            <option value="Mesa 1">Mesa 1</option>
+            <option value="Mesa 2">Mesa 2</option>
+            <option value="Mesa 3">Mesa 3</option>
+            <option value="Mesa 4">Mesa 4</option>
+            <option value="Mesa 5">Mesa 5</option>
+            <option value="Domicilio">🛵 Domicilio</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" onclick="iniciarPedido()">
+        Comenzar pedido →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     MENÚ
+═══════════════════════════════════ -->
+<div id="screen-menu" class="screen">
+  <div class="container">
+    <button class="back-link" onclick="goTo('screen-registro')">← Volver</button>
+    <div class="steps">
+      <div class="step-item done"><span class="step-num">✓</span>Cliente</div>
+      <div class="step-item active"><span class="step-num" style="background:var(--brand);">2</span>Elige tu pedido</div>
+      <div class="step-item"><span class="step-num" style="background:var(--border2); color:var(--text3);">3</span>Resumen</div>
+      <div class="step-item"><span class="step-num" style="background:var(--border2); color:var(--text3);">4</span>Factura</div>
+    </div>
+
+    <div class="menu-layout">
+      <div>
+        <div class="card">
+          <div id="menu-header" style="display:flex; align-items:center; gap:10px; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">
+            <div>
+              <span style="font-size:15px; font-weight:600;" id="menu-cliente-nombre"></span>
+              <span id="menu-mesa-badge" style="margin-left:8px;"></span>
+            </div>
+          </div>
+
+          <div class="section-label">🍔 Comidas</div>
+          <div class="product-grid" id="grid-comidas"></div>
+
+          <div class="section-label">➕ Adiciones</div>
+          <div class="product-grid" id="grid-adiciones"></div>
+
+          <div class="section-label" style="margin-top:1.5rem;">📝 Notas adicionales</div>
+          <div class="form-group" style="margin-bottom:0;">
+            <textarea id="inp-notas" placeholder="Ej: sin cebolla, extra salsa picante, sin hielo, alergia a los mariscos..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="cart-sticky">
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-title"><span class="icon">🛒</span> Tu pedido</div>
+          <div id="cart-items">
+            <div class="cart-empty">
+              <span class="cart-empty-icon">🛒</span>
+              <div>Selecciona productos del menú</div>
+            </div>
+          </div>
+          <div id="cart-totales" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--border);">
+            <div class="total-row"><span>Subtotal</span><span id="s-subtotal"></span></div>
+            <div class="total-row"><span>IVA (19%)</span><span id="s-iva"></span></div>
+            <div class="total-row grand"><span>Total</span><span id="s-total"></span></div>
+            <button class="btn btn-primary btn-block" style="margin-top:12px;" onclick="goResumen()">
+              Ver resumen →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     RESUMEN
+═══════════════════════════════════ -->
+<div id="screen-resumen" class="screen">
+  <div class="container">
+    <button class="back-link" onclick="goTo('screen-menu')">← Volver al menú</button>
+    <div class="steps">
+      <div class="step-item done"><span class="step-num">✓</span>Cliente</div>
+      <div class="step-item done"><span class="step-num">✓</span>Menú</div>
+      <div class="step-item active"><span class="step-num" style="background:var(--brand);">3</span>Resumen y cobro</div>
+      <div class="step-item"><span class="step-num" style="background:var(--border2); color:var(--text3);">4</span>Factura</div>
+    </div>
+
+    <div class="resumen-layout">
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="icon">📋</span> Detalle del pedido</div>
+          <div id="res-client-info" style="font-size:13px; color:var(--text2); margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border);"></div>
+          <div id="res-items"></div>
+          <div id="res-notas" style="display:none; margin-top:1rem;"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="icon">💳</span> Cobro</div>
+          <div id="cobro-totales"></div>
+          <hr />
+          <div class="form-group">
+            <label>Método de pago</label>
+            <select id="inp-pago" onchange="onPagoChange()">
+              <option>Efectivo</option>
+              <option>Tarjeta débito</option>
+              <option>Tarjeta crédito</option>
+              <option>Transferencia</option>
+              <option>Nequi / Daviplata</option>
+            </select>
+          </div>
+          <div id="efectivo-section">
+            <div class="form-group">
+              <label>Dinero recibido ($)</label>
+              <input type="number" id="inp-recibido" placeholder="0" oninput="calcCambio()" />
+            </div>
+            <div id="cambio-display" style="min-height:20px;"></div>
+          </div>
+          <button class="btn btn-success btn-lg btn-block" style="margin-top:1rem;" onclick="generarFactura()">
+            🧾 Generar factura
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     FACTURA
+═══════════════════════════════════ -->
+<div id="screen-factura" class="screen">
+  <div class="container">
+    <div class="steps">
+      <div class="step-item done"><span class="step-num">✓</span>Cliente</div>
+      <div class="step-item done"><span class="step-num">✓</span>Menú</div>
+      <div class="step-item done"><span class="step-num">✓</span>Resumen</div>
+      <div class="step-item active"><span class="step-num" style="background:var(--brand);">4</span>Factura</div>
+    </div>
+
+    <div class="invoice-wrap" id="invoice-main"></div>
+
+    <div style="display:flex; gap:10px; margin-top:1.5rem; flex-wrap:wrap;" class="no-print">
+      <button class="btn" onclick="window.print()">🖨 Imprimir factura</button>
+      <button class="btn btn-primary" onclick="nuevoPedido()">+ Nuevo pedido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     HISTORIAL
+═══════════════════════════════════ -->
+<div id="screen-historial" class="screen">
+  <div class="container">
+    <button class="back-link" onclick="goTo('screen-registro')">← Volver al inicio</button>
+    <h2 style="font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:1.5rem;">Historial de pedidos</h2>
+    <div class="hist-metrics" id="hist-metrics"></div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span> Pedidos registrados</div>
+      <div id="hist-lista"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     FACTURA HISTORIAL
+═══════════════════════════════════ -->
+<div id="screen-factura-hist" class="screen">
+  <div class="container">
+    <button class="back-link no-print" onclick="goTo('screen-historial')">← Volver al historial</button>
+    <div class="invoice-wrap" id="invoice-hist"></div>
+    <div style="margin-top:1.5rem;" class="no-print">
+      <button class="btn" onclick="window.print()">🖨 Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PANEL ADMINISTRADOR
+═══════════════════════════════════ -->
+<div id="screen-admin" class="screen">
+  <div class="container" style="max-width:1100px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:10px;">
+      <h2 style="font-family:'Syne',sans-serif; font-size:24px; font-weight:800;">⚙️ Panel de Administración</h2>
+      <button class="btn btn-primary" onclick="goTo('screen-registro')">🧾 Ir a Caja</button>
+    </div>
+    <div class="admin-layout">
+      <!-- Sidebar -->
+      <div class="admin-sidebar">
+        <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); padding:6px 12px; margin-bottom:6px;">Gestión</div>
+        <button class="admin-nav-item active" onclick="showAdminPanel('panel-dashboard')" id="anav-dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </button>
+        <button class="admin-nav-item" onclick="showAdminPanel('panel-inventario')" id="anav-inventario">
+          <span class="nav-icon">📦</span> Inventario
+        </button>
+        <button class="admin-nav-item" onclick="showAdminPanel('panel-menu')" id="anav-menu">
+          <span class="nav-icon">🍔</span> Menú / Productos
+        </button>
+        <div class="admin-nav-sep"></div>
+        <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); padding:6px 12px; margin-bottom:6px;">Reportes</div>
+        <button class="admin-nav-item" onclick="showAdminPanel('panel-ventas')" id="anav-ventas">
+          <span class="nav-icon">💰</span> Ventas
+        </button>
+        <button class="admin-nav-item" onclick="showAdminPanel('panel-usuarios')" id="anav-usuarios">
+          <span class="nav-icon">👥</span> Usuarios
+        </button>
+        <div class="admin-nav-sep"></div>
+        <button class="admin-nav-item" onclick="logout()" style="color:var(--red);">
+          <span class="nav-icon">🚪</span> Cerrar sesión
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div>
+
+        <!-- DASHBOARD -->
+        <div class="admin-panel active" id="panel-dashboard">
+          <div class="admin-metrics" id="dash-metrics"></div>
+          <div class="card">
+            <div class="card-title"><span class="icon">📋</span> Últimas ventas</div>
+            <div id="dash-ventas-lista"></div>
+          </div>
+        </div>
+
+        <!-- INVENTARIO -->
+        <div class="admin-panel" id="panel-inventario">
+          <div class="card">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; flex-wrap:wrap; gap:8px;">
+              <div class="card-title" style="margin-bottom:0;"><span class="icon">📦</span> Inventario de productos</div>
+              <button class="btn btn-primary btn-sm" onclick="openInvModal()">+ Agregar insumo</button>
+            </div>
+            <div class="inv-table-wrap">
+              <table class="inv-table">
+                <thead>
+                  <tr>
+                    <th>Insumo</th>
+                    <th>Categoría</th>
+                    <th>Stock actual</th>
+                    <th>Unidad</th>
+                    <th>Stock mínimo</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="inv-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- MENÚ / PRODUCTOS -->
+        <div class="admin-panel" id="panel-menu">
+          <div class="card">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:8px;">
+              <div class="card-title" style="margin-bottom:0;"><span class="icon">🍔</span> Productos del menú</div>
+              <button class="btn btn-primary btn-sm" onclick="openProdModal()">+ Nuevo producto</button>
+            </div>
+            <div class="cat-tabs">
+              <button class="cat-tab active" onclick="filterProdCat('todos')">Todos</button>
+              <button class="cat-tab" onclick="filterProdCat('Comidas')">🍔 Comidas</button>
+              <button class="cat-tab" onclick="filterProdCat('Adiciones')">➕ Adiciones</button>
+            </div>
+            <div class="inv-table-wrap">
+              <table class="inv-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="prod-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VENTAS -->
+        <div class="admin-panel" id="panel-ventas">
+          <div class="admin-metrics" id="ventas-metrics"></div>
+          <div class="card">
+            <div class="card-title"><span class="icon">📊</span> Reporte de ventas</div>
+            <div id="ventas-lista"></div>
+          </div>
+        </div>
+
+        <!-- USUARIOS -->
+        <div class="admin-panel" id="panel-usuarios">
+          <div class="card">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; flex-wrap:wrap; gap:8px;">
+              <div class="card-title" style="margin-bottom:0;"><span class="icon">👥</span> Usuarios del sistema</div>
+              <button class="btn btn-primary btn-sm" onclick="openUserModal()">+ Nuevo usuario</button>
+            </div>
+            <div id="users-lista"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     MODALES
+═══════════════════════════════════ -->
+
+<!-- Modal: Insumo inventario -->
+<div class="modal-overlay" id="modal-inv">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-inv-title">📦 Agregar insumo</div>
+    <button class="modal-close" onclick="closeModal('modal-inv')">✕</button>
+    <input type="hidden" id="inv-edit-id" />
+    <div class="form-group">
+      <label>Nombre del insumo</label>
+      <input type="text" id="inv-nombre" placeholder="Ej: Carne de res" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Categoría</label>
+        <select id="inv-cat">
+          <option>Carnes</option>
+          <option>Panes y masas</option>
+          <option>Vegetales</option>
+          <option>Salsas</option>
+          <option>Bebidas</option>
+          <option>Empaques</option>
+          <option>Lácteos</option>
+          <option>Otros</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Unidad de medida</label>
+        <select id="inv-unidad">
+          <option>Kg</option>
+          <option>g</option>
+          <option>L</option>
+          <option>ml</option>
+          <option>Unidades</option>
+          <option>Paquetes</option>
+          <option>Cajas</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Stock actual</label>
+        <input type="number" id="inv-stock" placeholder="0" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Stock mínimo (alerta)</label>
+        <input type="number" id="inv-min" placeholder="5" min="0" />
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button class="btn" onclick="closeModal('modal-inv')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveInsumo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Producto menú -->
+<div class="modal-overlay" id="modal-prod">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-prod-title">🍔 Nuevo producto</div>
+    <button class="modal-close" onclick="closeModal('modal-prod')">✕</button>
+    <input type="hidden" id="prod-edit-id" />
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre del producto</label>
+        <input type="text" id="prod-nombre" placeholder="Ej: Hamburguesa Clásica" />
+      </div>
+      <div class="form-group">
+        <label>Ícono (emoji)</label>
+        <input type="text" id="prod-icon" placeholder="🍔" maxlength="4" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Categoría</label>
+        <select id="prod-cat">
+          <option value="Comidas">Comidas</option>
+          <option value="Adiciones">Adiciones</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Precio ($)</label>
+        <input type="number" id="prod-precio" placeholder="15000" min="0" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Estado</label>
+      <select id="prod-estado">
+        <option value="activo">Activo (disponible)</option>
+        <option value="inactivo">Inactivo (oculto)</option>
+      </select>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button class="btn" onclick="closeModal('modal-prod')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProducto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Usuario -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-user-title">👤 Nuevo usuario</div>
+    <button class="modal-close" onclick="closeModal('modal-user')">✕</button>
+    <input type="hidden" id="user-edit-id" />
+    <div class="form-group">
+      <label>Nombre completo</label>
+      <input type="text" id="user-nombre" placeholder="Ej: María García" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Usuario (login)</label>
+        <input type="text" id="user-login" placeholder="Ej: cajero2" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="user-pass" placeholder="••••••••" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Rol</label>
+      <select id="user-rol">
+        <option value="cajero">Cajero</option>
+        <option value="admin">Administrador</option>
+      </select>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button class="btn" onclick="closeModal('modal-user')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveUser()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════
+// DATOS GLOBALES
+// ═══════════════════════════════════
+
+// Usuarios del sistema
+let USERS = [
+  { id: 'u1', nombre: 'Admin Principal', login: 'admin', pass: 'admin123', rol: 'admin' },
+  { id: 'u2', nombre: 'Cajero 1', login: 'cajero', pass: 'cajero123', rol: 'cajero' },
+];
+
+// Inventario de insumos
+let INVENTARIO = [
+  { id: 'i1', nombre: 'Carne de res (medallón)', cat: 'Carnes', stock: 45, unidad: 'Kg', min: 10 },
+  { id: 'i2', nombre: 'Pan de hamburguesa', cat: 'Panes y masas', stock: 120, unidad: 'Unidades', min: 30 },
+  { id: 'i3', nombre: 'Salchicha hot dog', cat: 'Carnes', stock: 8, unidad: 'Kg', min: 10 },
+  { id: 'i4', nombre: 'Papas congeladas', cat: 'Vegetales', stock: 25, unidad: 'Kg', min: 15 },
+  { id: 'i5', nombre: 'Salsa de tomate', cat: 'Salsas', stock: 3, unidad: 'L', min: 5 },
+  { id: 'i6', nombre: 'Gaseosa (bidón 5L)', cat: 'Bebidas', stock: 20, unidad: 'Unidades', min: 8 },
+  { id: 'i7', nombre: 'Vasos desechables', cat: 'Empaques', stock: 0, unidad: 'Paquetes', min: 5 },
+  { id: 'i8', nombre: 'Queso amarillo', cat: 'Lácteos', stock: 12, unidad: 'Kg', min: 5 },
+];
+
+// Menú / Productos
+let COMIDAS = [
+  { id:'c11', nombre:'Pizza Jamón y Queso (Personal 6p)', precio:13000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c12', nombre:'Pizza Jamón y Queso (Small 8p)', precio:17000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c13', nombre:'Pizza Jamón y Queso (Medium 12p)', precio:27000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c14', nombre:'Pizza Jamón y Queso (X-Large 16p)', precio:40000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c15', nombre:'Pizza Perro (Personal 6p)', precio:14000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c16', nombre:'Pizza Perro (Small 8p)', precio:18000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c17', nombre:'Pizza Perro (Medium 12p)', precio:29000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c18', nombre:'Pizza Perro (X-Large 16p)', precio:41000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c19', nombre:'Pizza Napolitana (Personal 6p)', precio:15000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c20', nombre:'Pizza Napolitana (Small 8p)', precio:19000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c21', nombre:'Pizza Napolitana (Medium 12p)', precio:29000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c22', nombre:'Pizza Napolitana (X-Large 16p)', precio:41000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c23', nombre:'Pizza Hawaiana (Personal 6p)', precio:15000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c24', nombre:'Pizza Hawaiana (Small 8p)', precio:19000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c25', nombre:'Pizza Hawaiana (Medium 12p)', precio:29000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c26', nombre:'Pizza Hawaiana (X-Large 16p)', precio:41000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c27', nombre:'Pizza Pollo (Personal 6p)', precio:15000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c28', nombre:'Pizza Pollo (Small 8p)', precio:20000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c29', nombre:'Pizza Pollo (Medium 12p)', precio:33000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c30', nombre:'Pizza Pollo (X-Large 16p)', precio:44000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c31', nombre:'Pizza Chorizo (Personal 6p)', precio:15000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c32', nombre:'Pizza Chorizo (Small 8p)', precio:19000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c33', nombre:'Pizza Chorizo (Medium 12p)', precio:31000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c34', nombre:'Pizza Chorizo (X-Large 16p)', precio:43000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c35', nombre:'Pizza Butifarra (Personal 6p)', precio:15000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c36', nombre:'Pizza Butifarra (Small 8p)', precio:19000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c37', nombre:'Pizza Butifarra (Medium 12p)', precio:31000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c38', nombre:'Pizza Butifarra (X-Large 16p)', precio:43000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c39', nombre:'Pizza Pollo y Jamón (Personal 6p)', precio:15000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c40', nombre:'Pizza Pollo y Jamón (Small 8p)', precio:20000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c41', nombre:'Pizza Pollo y Jamón (Medium 12p)', precio:32000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c42', nombre:'Pizza Pollo y Jamón (X-Large 16p)', precio:45000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c43', nombre:'Pizza Chorizo y Jamón (Personal 6p)', precio:16000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c44', nombre:'Pizza Chorizo y Jamón (Small 8p)', precio:20000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c45', nombre:'Pizza Chorizo y Jamón (Medium 12p)', precio:32000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c46', nombre:'Pizza Chorizo y Jamón (X-Large 16p)', precio:45000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c47', nombre:'Pizza Butifarra y Jamón (Personal 6p)', precio:16000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c48', nombre:'Pizza Butifarra y Jamón (Small 8p)', precio:20000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c49', nombre:'Pizza Butifarra y Jamón (Medium 12p)', precio:32000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c50', nombre:'Pizza Butifarra y Jamón (X-Large 16p)', precio:45000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c51', nombre:'Pizza Pollo-Champiñones (Personal 6p)', precio:18000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c52', nombre:'Pizza Pollo-Champiñones (Small 8p)', precio:23000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c53', nombre:'Pizza Pollo-Champiñones (Medium 12p)', precio:37000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c54', nombre:'Pizza Pollo-Champiñones (X-Large 16p)', precio:50000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c55', nombre:'Pizza Pollo-Peperoni y Salami (Personal 6p)', precio:18000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c56', nombre:'Pizza Pollo-Peperoni y Salami (Small 8p)', precio:23000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c57', nombre:'Pizza Pollo-Peperoni y Salami (Medium 12p)', precio:37000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c58', nombre:'Pizza Pollo-Peperoni y Salami (X-Large 16p)', precio:50000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c59', nombre:'Pizza Pollo-Chorizo y Butifarra (Personal 6p)', precio:18000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c60', nombre:'Pizza Pollo-Chorizo y Butifarra (Small 8p)', precio:23000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c61', nombre:'Pizza Pollo-Chorizo y Butifarra (Medium 12p)', precio:37000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c62', nombre:'Pizza Pollo-Chorizo y Butifarra (X-Large 16p)', precio:50000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c63', nombre:'Pizza Ranchera (Salchicha ranchera y tocineta) (Personal 6p)', precio:19000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c64', nombre:'Pizza Ranchera (Salchicha ranchera y tocineta) (Small 8p)', precio:24000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c65', nombre:'Pizza Ranchera (Salchicha ranchera y tocineta) (Medium 12p)', precio:39000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c66', nombre:'Pizza Ranchera (Salchicha ranchera y tocineta) (X-Large 16p)', precio:54000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c67', nombre:'Pizza Vegetariana (Champiñones, tomate, cebolla, pimentón) (Personal 6p)', precio:18000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c68', nombre:'Pizza Vegetariana (Champiñones, tomate, cebolla, pimentón) (Small 8p)', precio:23000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c69', nombre:'Pizza Vegetariana (Champiñones, tomate, cebolla, pimentón) (Medium 12p)', precio:37000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c70', nombre:'Pizza Vegetariana (Champiñones, tomate, cebolla, pimentón) (X-Large 16p)', precio:54000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c71', nombre:'Pizza Pollo-Tocineta y Maíz (Personal 6p)', precio:19000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c72', nombre:'Pizza Pollo-Tocineta y Maíz (Small 8p)', precio:22000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c73', nombre:'Pizza Pollo-Tocineta y Maíz (Medium 12p)', precio:39000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c74', nombre:'Pizza Pollo-Tocineta y Maíz (X-Large 16p)', precio:54000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c75', nombre:'Pizza Peperoni-Pollo y Maíz (Personal 6p)', precio:18000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c76', nombre:'Pizza Peperoni-Pollo y Maíz (Small 8p)', precio:23000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c77', nombre:'Pizza Peperoni-Pollo y Maíz (Medium 12p)', precio:37000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c78', nombre:'Pizza Peperoni-Pollo y Maíz (X-Large 16p)', precio:50000, icon:'🍕', cat:'Comidas', estado:'activo' },
+  { id:'c99', nombre:'Sandwich Frank (Jamón, queso mozzarella, queso cheddar, verduras y salsas)', precio:9000, icon:'🥪', cat:'Comidas', estado:'activo' },
+  { id:'c100', nombre:'Jam & Chick (Pollo, jamón, queso mozzarella, queso cheddar, verduras y salsas)', precio:12000, icon:'🥪', cat:'Comidas', estado:'activo' },
+  { id:'c101', nombre:'Pepper Chick (Pollo, jamón, peperoni, queso mozzarella, queso cheddar, verduras y salsas)', precio:12000, icon:'🥪', cat:'Comidas', estado:'activo' },
+  { id:'c102', nombre:'Slam & Chick (Salami, pollo, queso mozzarella, queso cheddar, verduras y salsas)', precio:12000, icon:'🥪', cat:'Comidas', estado:'activo' },
+  { id:'c103', nombre:'Ranch & Roll (Tocineta, salchicha ranchera, queso mozzarella, queso cheddar, verduras y salsas)', precio:12000, icon:'🥪', cat:'Comidas', estado:'activo' },
+  { id:'c104', nombre:'Perro Sencillo', precio:6500, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c105', nombre:'Perro a la Plancha', precio:7000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c106', nombre:'Perro Italiano', precio:9000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c107', nombre:'Perro Tocineta', precio:9000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c108', nombre:'Perro Gemelo', precio:10000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c109', nombre:'Perro Choriperro', precio:10000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c110', nombre:'Perro Butiperro', precio:10000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c111', nombre:'Perro Mitisuizo', precio:10000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c112', nombre:'Perro Ranchero', precio:12000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c113', nombre:'Perro Pollo', precio:12000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c114', nombre:'Perro Suizo', precio:13000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c115', nombre:'Perro Salvaje', precio:23000, icon:'🌭', cat:'Comidas', estado:'activo' },
+  { id:'c116', nombre:'Salchipapa Sencilla', precio:12000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c117', nombre:'Salchipapa Butipapa', precio:15000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c118', nombre:'Salchipapa Choripapa', precio:15000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c119', nombre:'Salchipapa Ranchera', precio:17000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c120', nombre:'Salchipapa Suiza', precio:17000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c121', nombre:'Salchipapa Especial', precio:18000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c122', nombre:'Salchipapa Salchipollo', precio:20000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c123', nombre:'Salchipapa Carne-Pollo', precio:20000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c124', nombre:'Salvajada para 3', precio:35000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c125', nombre:'Salvajada para 4', precio:45000, icon:'🍟', cat:'Comidas', estado:'activo' },
+  { id:'c126', nombre:'Hamburguesa Carne', precio:13000, icon:'🍔', cat:'Comidas', estado:'activo' },
+  { id:'c127', nombre:'Hamburguesa Pollo', precio:14000, icon:'🍔', cat:'Comidas', estado:'activo' },
+  { id:'c128', nombre:'Hamburguesa Doble Carne', precio:18000, icon:'🍔', cat:'Comidas', estado:'activo' },
+  { id:'c129', nombre:'Hamburguesa Doble Pollo', precio:20000, icon:'🍔', cat:'Comidas', estado:'activo' },
+  { id:'c130', nombre:'Hamburguesa Carne y Pollo', precio:20000, icon:'🍔', cat:'Comidas', estado:'activo' },
+  { id:'c131', nombre:'Desgranado Suizo', precio:16000, icon:'🌽', cat:'Comidas', estado:'activo' },
+  { id:'c132', nombre:'Desgranado Pollo', precio:17000, icon:'🌽', cat:'Comidas', estado:'activo' },
+  { id:'c133', nombre:'Desgranado Cerdo-Pollo', precio:18000, icon:'🌽', cat:'Comidas', estado:'activo' },
+  { id:'c134', nombre:'Desgranado Especial', precio:22000, icon:'🌽', cat:'Comidas', estado:'activo' },
+];
+let ADICIONES = [
+  { id:'c79', nombre:'Adicional Cebolla (Personal 6p)', precio:3000, icon:'🧅', cat:'Adiciones', estado:'activo' },
+  { id:'c80', nombre:'Adicional Cebolla (Small 8p)', precio:3500, icon:'🧅', cat:'Adiciones', estado:'activo' },
+  { id:'c81', nombre:'Adicional Cebolla (Medium 12p)', precio:5000, icon:'🧅', cat:'Adiciones', estado:'activo' },
+  { id:'c82', nombre:'Adicional Cebolla (X-Large 16p)', precio:6000, icon:'🧅', cat:'Adiciones', estado:'activo' },
+  { id:'c83', nombre:'Adicional Maíz (Personal 6p)', precio:2500, icon:'🌽', cat:'Adiciones', estado:'activo' },
+  { id:'c84', nombre:'Adicional Maíz (Small 8p)', precio:3000, icon:'🌽', cat:'Adiciones', estado:'activo' },
+  { id:'c85', nombre:'Adicional Maíz (Medium 12p)', precio:4500, icon:'🌽', cat:'Adiciones', estado:'activo' },
+  { id:'c86', nombre:'Adicional Maíz (X-Large 16p)', precio:6000, icon:'🌽', cat:'Adiciones', estado:'activo' },
+  { id:'c87', nombre:'Adicional Tomate (Personal 6p)', precio:3000, icon:'🍅', cat:'Adiciones', estado:'activo' },
+  { id:'c88', nombre:'Adicional Tomate (Small 8p)', precio:3500, icon:'🍅', cat:'Adiciones', estado:'activo' },
+  { id:'c89', nombre:'Adicional Tomate (Medium 12p)', precio:5000, icon:'🍅', cat:'Adiciones', estado:'activo' },
+  { id:'c90', nombre:'Adicional Tomate (X-Large 16p)', precio:6000, icon:'🍅', cat:'Adiciones', estado:'activo' },
+  { id:'c91', nombre:'Adicional Pimentón (Personal 6p)', precio:2500, icon:'🫑', cat:'Adiciones', estado:'activo' },
+  { id:'c92', nombre:'Adicional Pimentón (Small 8p)', precio:3000, icon:'🫑', cat:'Adiciones', estado:'activo' },
+  { id:'c93', nombre:'Adicional Pimentón (Medium 12p)', precio:4500, icon:'🫑', cat:'Adiciones', estado:'activo' },
+  { id:'c94', nombre:'Adicional Pimentón (X-Large 16p)', precio:6000, icon:'🫑', cat:'Adiciones', estado:'activo' },
+  { id:'c95', nombre:'Adicional Champiñón (Personal 6p)', precio:3000, icon:'🍄', cat:'Adiciones', estado:'activo' },
+  { id:'c96', nombre:'Adicional Champiñón (Small 8p)', precio:4000, icon:'🍄', cat:'Adiciones', estado:'activo' },
+  { id:'c97', nombre:'Adicional Champiñón (Medium 12p)', precio:7000, icon:'🍄', cat:'Adiciones', estado:'activo' },
+  { id:'c98', nombre:'Adicional Champiñón (X-Large 16p)', precio:10000, icon:'🍄', cat:'Adiciones', estado:'activo' },
+];
+
+let cart = {};
+let cliente = {};
+let pedidoActual = null;
+let historial = [];
+let factNum = 1000;
+let currentUser = null;
+let selectedRole = 'admin';
+let prodCatFilter = 'todos';
+let nextId = 100;
+
+const fmt = n => '$' + Math.round(n).toLocaleString('es-CO');
+
+// ═══════════════════════════════════
+// NAVEGACIÓN / SESIÓN
+// ═══════════════════════════════════
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Refresh panels when entering admin
+  if (id === 'screen-admin') {
+    refreshDashboard();
+    renderInvTable();
+    renderProdTable();
+    renderVentasPanel();
+    renderUsersPanel();
+  }
+}
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('tab-admin').classList.toggle('active', role === 'admin');
+  document.getElementById('tab-cajero').classList.toggle('active', role === 'cajero');
+  document.getElementById('inp-user').value = '';
+  document.getElementById('inp-pass').value = '';
+  document.getElementById('login-err').style.display = 'none';
+}
+
+function doLogin() {
+  const u = document.getElementById('inp-user').value.trim();
+  const p = document.getElementById('inp-pass').value.trim();
+  const user = USERS.find(x => x.login === u && x.pass === p && x.rol === selectedRole);
+  if (!user) {
+    document.getElementById('login-err').style.display = 'block';
+    return;
+  }
+  currentUser = user;
+  document.getElementById('main-nav').style.display = 'flex';
+  document.getElementById('nav-username').textContent = user.nombre;
+
+  const roleBadge = document.getElementById('nav-role-badge');
+  if (user.rol === 'admin') {
+    roleBadge.textContent = '🛡️ Administrador';
+    roleBadge.className = 'nav-role-badge nav-role-admin';
+    document.getElementById('nav-admin-btn').style.display = 'inline-flex';
+    document.getElementById('nav-cajero-btn').style.display = 'inline-flex';
+    document.getElementById('nav-historial-btn').style.display = 'none';
+    goTo('screen-admin');
+  } else {
+    roleBadge.textContent = '💳 Cajero';
+    roleBadge.className = 'nav-role-badge nav-role-cajero';
+    document.getElementById('nav-admin-btn').style.display = 'none';
+    document.getElementById('nav-cajero-btn').style.display = 'none';
+    document.getElementById('nav-historial-btn').style.display = 'inline-flex';
+    goTo('screen-registro');
+  }
+}
+
+function logout() {
+  currentUser = null;
+  cart = {};
+  cliente = {};
+  pedidoActual = null;
+  document.getElementById('main-nav').style.display = 'none';
+  document.getElementById('nav-cliente').style.display = 'none';
+  document.getElementById('inp-user').value = '';
+  document.getElementById('inp-pass').value = '';
+  document.getElementById('login-err').style.display = 'none';
+  selectRole('admin');
+  goTo('screen-login');
+}
+
+// ═══════════════════════════════════
+// TOAST
+// ═══════════════════════════════════
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════
+// MENÚ / CAJA (Cajero)
+// ═══════════════════════════════════
+
+function renderMenu() {
+  const activeCom = COMIDAS.filter(p => p.estado === 'activo');
+  const activeAdi = ADICIONES.filter(p => p.estado === 'activo');
+  renderGrid('grid-comidas', activeCom);
+  renderGrid('grid-adiciones', activeAdi);
+  renderCartPanel();
+}
+
+function renderGrid(id, items) {
+  document.getElementById(id).innerHTML = items.map(p => {
+    const qty = cart[p.id] || 0;
+    return `<div class="product-card ${qty ? 'selected' : ''}" id="pc-${p.id}" onclick="toggleProd('${p.id}')">
+      <span class="p-icon">${p.icon}</span>
+      <div class="p-name">${p.nombre}</div>
+      <div class="p-price">${fmt(p.precio)}</div>
+      ${qty ? `<div class="qty-row">
+        <button class="qty-btn" onclick="event.stopPropagation();changeQty('${p.id}',-1)">−</button>
+        <span class="qty-num">${qty}</span>
+        <button class="qty-btn" onclick="event.stopPropagation();changeQty('${p.id}',1)">+</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function toggleProd(id) {
+  if (cart[id]) delete cart[id]; else cart[id] = 1;
+  renderMenu();
+}
+
+function changeQty(id, d) {
+  cart[id] = (cart[id] || 0) + d;
+  if (cart[id] <= 0) delete cart[id];
+  renderMenu();
+}
+
+function getItems() {
+  return [...COMIDAS, ...ADICIONES].filter(p => cart[p.id]).map(p => ({ ...p, qty: cart[p.id], sub: p.precio * cart[p.id] }));
+}
+
+function calcTotals(items) {
+  const sub = items.reduce((s, i) => s + i.sub, 0);
+  const iva = sub * 0.19;
+  return { sub, iva, total: sub + iva };
+}
+
+function renderCartPanel() {
+  const items = getItems();
+  const ci = document.getElementById('cart-items');
+  const ct = document.getElementById('cart-totales');
+  if (!items.length) {
+    ci.innerHTML = `<div class="cart-empty"><span class="cart-empty-icon">🛒</span><div>Selecciona productos del menú</div></div>`;
+    ct.style.display = 'none';
+    return;
+  }
+  const { sub, iva, total } = calcTotals(items);
+  ci.innerHTML = items.map(i => `
+    <div class="cart-item">
+      <span style="font-size:18px;">${i.icon}</span>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${i.nombre}</div>
+        <div class="cart-item-price">x${i.qty} · ${fmt(i.sub)}</div>
+      </div>
+      <button class="remove-btn" onclick="changeQty('${i.id}',-${i.qty})" title="Quitar">✕</button>
+    </div>`).join('');
+  ct.style.display = 'block';
+  document.getElementById('s-subtotal').textContent = fmt(sub);
+  document.getElementById('s-iva').textContent = fmt(iva);
+  document.getElementById('s-total').textContent = fmt(total);
+}
+
+function iniciarPedido() {
+  const nombre = document.getElementById('inp-nombre').value.trim();
+  if (!nombre) { showToast('Por favor ingresa el nombre del cliente', 'err'); return; }
+  const mesa = document.getElementById('inp-mesa').value;
+  cliente = { nombre, mesa };
+  cart = {};
+  document.getElementById('inp-notas').value = '';
+  document.getElementById('menu-cliente-nombre').textContent = nombre;
+  document.getElementById('menu-mesa-badge').innerHTML = `<span class="badge badge-brand">${mesa}</span>`;
+  document.getElementById('nav-cliente').style.display = 'inline-block';
+  document.getElementById('nav-cliente').textContent = nombre;
+  renderMenu();
+  goTo('screen-menu');
+}
+
+function goResumen() {
+  const items = getItems();
+  if (!items.length) { showToast('Agrega al menos un producto', 'err'); return; }
+  const { sub, iva, total } = calcTotals(items);
+  const notas = document.getElementById('inp-notas').value.trim();
+
+  document.getElementById('res-client-info').innerHTML =
+    `<strong>${cliente.nombre}</strong> · <span class="badge badge-brand">${cliente.mesa}</span>`;
+
+  document.getElementById('res-items').innerHTML = items.map(i => `
+    <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border);">
+      <span style="font-size:18px;">${i.icon}</span>
+      <span style="flex:1; font-size:13px; font-weight:500;">${i.nombre}</span>
+      <span style="font-size:13px; color:var(--text3);">x${i.qty}</span>
+      <span style="font-size:13px; font-weight:600; min-width:70px; text-align:right;">${fmt(i.sub)}</span>
+    </div>`).join('');
+
+  const nb = document.getElementById('res-notas');
+  if (notas) {
+    nb.style.display = 'block';
+    nb.innerHTML = `<div class="invoice-notes">📝 <strong>Nota:</strong> ${notas}</div>`;
+  } else { nb.style.display = 'none'; }
+
+  document.getElementById('cobro-totales').innerHTML = `
+    <div class="total-row"><span>Subtotal</span><span>${fmt(sub)}</span></div>
+    <div class="total-row"><span>IVA (19%)</span><span>${fmt(iva)}</span></div>
+    <div class="total-row grand"><span>Total a cobrar</span><span>${fmt(total)}</span></div>`;
+
+  pedidoActual = { items, sub, iva, total, notas, cliente: { ...cliente } };
+  document.getElementById('inp-recibido').value = '';
+  document.getElementById('cambio-display').innerHTML = '';
+  onPagoChange();
+  goTo('screen-resumen');
+}
+
+function onPagoChange() {
+  const pago = document.getElementById('inp-pago').value;
+  document.getElementById('efectivo-section').style.display = pago === 'Efectivo' ? 'block' : 'none';
+  document.getElementById('cambio-display').innerHTML = '';
+}
+
+function calcCambio() {
+  if (!pedidoActual) return;
+  const rec = parseFloat(document.getElementById('inp-recibido').value) || 0;
+  const d = document.getElementById('cambio-display');
+  if (!rec) { d.innerHTML = ''; return; }
+  const cambio = rec - pedidoActual.total;
+  if (cambio < 0) d.innerHTML = `<div class="cambio-err">Faltan ${fmt(Math.abs(cambio))}</div>`;
+  else d.innerHTML = `<div class="cambio-ok">✓ Cambio: ${fmt(cambio)}</div>`;
+}
+
+function buildInvoiceHTML(data) {
+  const rows = data.items.map(i =>
+    `<tr><td>${i.icon} ${i.nombre}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">${fmt(i.precio)}</td><td style="text-align:right;">${fmt(i.sub)}</td></tr>`
+  ).join('');
+  const cambioRow = data.pago === 'Efectivo' && data.cambio > 0
+    ? `<div class="total-row" style="color:var(--green); font-weight:600;"><span>Cambio entregado</span><span>${fmt(data.cambio)}</span></div>` : '';
+  const recRow = data.pago === 'Efectivo'
+    ? `<div class="total-row"><span>Recibido</span><span>${fmt(data.recibido)}</span></div>` : '';
+  const notasBlock = data.notas
+    ? `<div class="invoice-notes">📝 <strong>Nota del cliente:</strong> ${data.notas}</div>` : '';
+  const cajeroInfo = data.cajero ? `<div style="font-size:11px; color:var(--text3); margin-top:2px;">Cajero: ${data.cajero}</div>` : '';
+  return `
+    <div class="invoice-top">
+      <div>
+        <div class="invoice-logo-text">🍔 FastFood</div>
+        <div class="invoice-logo-sub">Tu sabor favorito</div>
+      </div>
+      <div class="invoice-meta-right">
+        <div class="invoice-meta-num">${data.num}</div>
+        <div>${data.fecha}</div>
+        <div>${data.hora}</div>
+      </div>
+    </div>
+    <div class="invoice-body">
+      <div class="invoice-client-box">
+        <div><span style="color:var(--text3); font-size:11px; text-transform:uppercase; font-weight:600;">Cliente</span></div>
+        <div style="font-size:15px; font-weight:600; margin-top:4px;">${data.cliente.nombre}</div>
+        <div style="font-size:13px; color:var(--text2); margin-top:2px;">${data.cliente.mesa} &nbsp;·&nbsp; Pago: ${data.pago}</div>
+        ${cajeroInfo}
+      </div>
+      ${notasBlock}
+      <table class="invoice-table">
+        <thead><tr><th>Producto</th><th style="text-align:center;">Cant.</th><th style="text-align:right;">Precio</th><th style="text-align:right;">Total</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="invoice-totals">
+        <div class="total-row"><span>Subtotal</span><span>${fmt(data.sub)}</span></div>
+        <div class="total-row"><span>IVA 19%</span><span>${fmt(data.iva)}</span></div>
+        ${recRow}
+        <div class="total-row grand"><span>Total</span><span>${fmt(data.total)}</span></div>
+        ${cambioRow}
+      </div>
+    </div>
+    <div class="invoice-footer">¡Gracias por tu compra! · Vuelve pronto 🙌</div>`;
+}
+
+function generarFactura() {
+  if (!pedidoActual) return;
+  const pago = document.getElementById('inp-pago').value;
+  let recibido = pedidoActual.total;
+  if (pago === 'Efectivo') {
+    recibido = parseFloat(document.getElementById('inp-recibido').value) || 0;
+    if (recibido < pedidoActual.total) { showToast('El monto recibido es insuficiente', 'err'); return; }
+  }
+  factNum++;
+  const now = new Date();
+  const entrada = {
+    ...pedidoActual,
+    num: 'F-' + factNum,
+    fecha: now.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }),
+    hora: now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+    pago,
+    recibido,
+    cambio: recibido - pedidoActual.total,
+    ts: Date.now(),
+    cajero: currentUser ? currentUser.nombre : '—'
+  };
+  historial.unshift(entrada);
+  document.getElementById('invoice-main').innerHTML = buildInvoiceHTML(entrada);
+  goTo('screen-factura');
+  showToast('¡Factura generada con éxito!');
+}
+
+function nuevoPedido() {
+  cart = {};
+  pedidoActual = null;
+  document.getElementById('inp-nombre').value = '';
+  document.getElementById('inp-recibido').value = '';
+  document.getElementById('nav-cliente').style.display = 'none';
+  goTo('screen-registro');
+}
+
+function showHistorial() {
+  const total = historial.reduce((s, h) => s + h.total, 0);
+  const hoy = historial.length;
+  const ultimo = historial[0]?.hora || '—';
+
+  document.getElementById('hist-metrics').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Pedidos registrados</div><div class="metric-value brand">${hoy}</div></div>
+    <div class="metric-card"><div class="metric-label">Total en ventas</div><div class="metric-value" style="font-size:19px;">${fmt(total)}</div></div>
+    <div class="metric-card"><div class="metric-label">Último pedido</div><div class="metric-value" style="font-size:20px;">${ultimo}</div></div>`;
+
+  const lista = document.getElementById('hist-lista');
+  if (!historial.length) {
+    lista.innerHTML = `<div class="no-hist"><span class="no-hist-icon">📭</span>Aún no hay pedidos registrados</div>`;
+  } else {
+    lista.innerHTML = historial.map((h, i) => `
+      <div class="hist-row" onclick="verFacturaHist(${i})">
+        <div class="hist-info">
+          <div class="name">${h.num} · ${h.cliente.nombre}</div>
+          <div class="meta">${h.hora} · ${h.cliente.mesa} · ${h.pago}${h.cajero ? ' · ' + h.cajero : ''}</div>
+        </div>
+        <div class="hist-right">
+          <span class="hist-amount">${fmt(h.total)}</span>
+          <span style="color:var(--text3); font-size:18px;">›</span>
+        </div>
+      </div>`).join('');
+  }
+  goTo('screen-historial');
+}
+
+function verFacturaHist(i) {
+  document.getElementById('invoice-hist').innerHTML = buildInvoiceHTML(historial[i]);
+  goTo('screen-factura-hist');
+}
+
+// ═══════════════════════════════════
+// ADMIN — PANEL NAVIGATION
+// ═══════════════════════════════════
+
+function showAdminPanel(panelId) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
+  const navId = 'anav-' + panelId.replace('panel-', '');
+  if (document.getElementById(navId)) document.getElementById(navId).classList.add('active');
+
+  if (panelId === 'panel-dashboard') refreshDashboard();
+  if (panelId === 'panel-inventario') renderInvTable();
+  if (panelId === 'panel-menu') renderProdTable();
+  if (panelId === 'panel-ventas') renderVentasPanel();
+  if (panelId === 'panel-usuarios') renderUsersPanel();
+}
+
+// ═══════════════════════════════════
+// ADMIN — DASHBOARD
+// ═══════════════════════════════════
+
+function refreshDashboard() {
+  const totalVentas = historial.reduce((s, h) => s + h.total, 0);
+  const productosActivos = [...COMIDAS, ...ADICIONES].filter(p => p.estado === 'activo').length;
+  const alertasStock = INVENTARIO.filter(i => i.stock <= i.min).length;
+
+  document.getElementById('dash-metrics').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Pedidos hoy</div><div class="metric-value brand">${historial.length}</div></div>
+    <div class="metric-card"><div class="metric-label">Total en ventas</div><div class="metric-value" style="font-size:19px;">${fmt(totalVentas)}</div></div>
+    <div class="metric-card"><div class="metric-label">Productos activos</div><div class="metric-value" style="font-size:22px;">${productosActivos}</div></div>
+    <div class="metric-card"><div class="metric-label">Alertas inventario</div><div class="metric-value" style="font-size:22px; color:${alertasStock > 0 ? 'var(--red)' : 'var(--green)'};">${alertasStock}</div></div>`;
+
+  const lista = document.getElementById('dash-ventas-lista');
+  if (!historial.length) {
+    lista.innerHTML = `<div class="no-hist"><span class="no-hist-icon">📭</span>Aún no hay ventas registradas</div>`;
+  } else {
+    lista.innerHTML = historial.slice(0, 5).map((h, i) => `
+      <div class="hist-row" onclick="verFacturaHist(${i})">
+        <div class="hist-info">
+          <div class="name">${h.num} · ${h.cliente.nombre}</div>
+          <div class="meta">${h.hora} · ${h.cliente.mesa} · ${h.cajero || '—'}</div>
+        </div>
+        <div class="hist-right">
+          <span class="hist-amount">${fmt(h.total)}</span>
+          <span style="color:var(--text3); font-size:18px;">›</span>
+        </div>
+      </div>`).join('');
+  }
+}
+
+// ═══════════════════════════════════
+// ADMIN — INVENTARIO
+// ═══════════════════════════════════
+
+function stockStatus(item) {
+  if (item.stock === 0) return '<span class="stock-badge stock-out">Sin stock</span>';
+  if (item.stock <= item.min) return '<span class="stock-badge stock-low">Stock bajo</span>';
+  return '<span class="stock-badge stock-ok">Disponible</span>';
+}
+
+function renderInvTable() {
+  const tbody = document.getElementById('inv-tbody');
+  tbody.innerHTML = INVENTARIO.map(item => `
+    <tr>
+      <td><strong>${item.nombre}</strong></td>
+      <td><span class="badge badge-gray">${item.cat}</span></td>
+      <td><strong>${item.stock}</strong></td>
+      <td>${item.unidad}</td>
+      <td>${item.min}</td>
+      <td>${stockStatus(item)}</td>
+      <td>
+        <div class="inv-row-actions">
+          <button class="btn btn-sm" onclick="editInsumo('${item.id}')">✏️ Editar</button>
+          <button class="btn btn-sm btn-primary" onclick="addStock('${item.id}')">+ Stock</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteInsumo('${item.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openInvModal(id) {
+  document.getElementById('inv-edit-id').value = '';
+  document.getElementById('inv-nombre').value = '';
+  document.getElementById('inv-stock').value = '';
+  document.getElementById('inv-min').value = '';
+  document.getElementById('modal-inv-title').textContent = '📦 Agregar insumo';
+  openModal('modal-inv');
+}
+
+function editInsumo(id) {
+  const item = INVENTARIO.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('inv-edit-id').value = id;
+  document.getElementById('inv-nombre').value = item.nombre;
+  document.getElementById('inv-cat').value = item.cat;
+  document.getElementById('inv-unidad').value = item.unidad;
+  document.getElementById('inv-stock').value = item.stock;
+  document.getElementById('inv-min').value = item.min;
+  document.getElementById('modal-inv-title').textContent = '✏️ Editar insumo';
+  openModal('modal-inv');
+}
+
+function addStock(id) {
+  const item = INVENTARIO.find(i => i.id === id);
+  if (!item) return;
+  const cantidad = parseFloat(prompt(`¿Cuántas ${item.unidad} agregar al stock de "${item.nombre}"?`));
+  if (isNaN(cantidad) || cantidad <= 0) return;
+  item.stock += cantidad;
+  renderInvTable();
+  showToast(`Stock actualizado: ${item.nombre}`);
+}
+
+function deleteInsumo(id) {
+  if (!confirm('¿Eliminar este insumo del inventario?')) return;
+  INVENTARIO = INVENTARIO.filter(i => i.id !== id);
+  renderInvTable();
+  showToast('Insumo eliminado');
+}
+
+function saveInsumo() {
+  const nombre = document.getElementById('inv-nombre').value.trim();
+  const cat = document.getElementById('inv-cat').value;
+  const unidad = document.getElementById('inv-unidad').value;
+  const stock = parseFloat(document.getElementById('inv-stock').value) || 0;
+  const min = parseFloat(document.getElementById('inv-min').value) || 0;
+  if (!nombre) { showToast('Ingresa el nombre del insumo', 'err'); return; }
+
+  const editId = document.getElementById('inv-edit-id').value;
+  if (editId) {
+    const item = INVENTARIO.find(i => i.id === editId);
+    if (item) { item.nombre = nombre; item.cat = cat; item.unidad = unidad; item.stock = stock; item.min = min; }
+    showToast('Insumo actualizado');
+  } else {
+    INVENTARIO.push({ id: 'i' + (++nextId), nombre, cat, unidad, stock, min });
+    showToast('Insumo agregado');
+  }
+  closeModal('modal-inv');
+  renderInvTable();
+}
+
+// ═══════════════════════════════════
+// ADMIN — PRODUCTOS / MENÚ
+// ═══════════════════════════════════
+
+function filterProdCat(cat) {
+  prodCatFilter = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderProdTable();
+}
+
+function getAllProductos() {
+  return [...COMIDAS, ...ADICIONES];
+}
+
+function renderProdTable() {
+  const all = getAllProductos().filter(p => prodCatFilter === 'todos' || p.cat === prodCatFilter);
+  const tbody = document.getElementById('prod-tbody');
+  tbody.innerHTML = all.map(p => `
+    <tr>
+      <td><span style="font-size:20px; margin-right:8px;">${p.icon}</span><strong>${p.nombre}</strong></td>
+      <td><span class="badge ${p.cat === 'Comidas' ? 'badge-brand' : 'badge-yellow'}">${p.cat}</span></td>
+      <td><strong>${fmt(p.precio)}</strong></td>
+      <td><span class="badge ${p.estado === 'activo' ? 'badge-green' : 'badge-gray'}">${p.estado === 'activo' ? 'Activo' : 'Inactivo'}</span></td>
+      <td>
+        <div class="inv-row-actions">
+          <button class="btn btn-sm" onclick="editProducto('${p.id}')">✏️ Editar</button>
+          <button class="btn btn-sm ${p.estado === 'activo' ? 'btn-danger' : 'btn-success'}" onclick="toggleProducto('${p.id}')">
+            ${p.estado === 'activo' ? '⏸ Desactivar' : '▶ Activar'}
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deleteProducto('${p.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openProdModal() {
+  document.getElementById('prod-edit-id').value = '';
+  document.getElementById('prod-nombre').value = '';
+  document.getElementById('prod-icon').value = '';
+  document.getElementById('prod-precio').value = '';
+  document.getElementById('prod-estado').value = 'activo';
+  document.getElementById('modal-prod-title').textContent = '🍔 Nuevo producto';
+  openModal('modal-prod');
+}
+
+function editProducto(id) {
+  const p = getAllProductos().find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('prod-edit-id').value = id;
+  document.getElementById('prod-nombre').value = p.nombre;
+  document.getElementById('prod-icon').value = p.icon;
+  document.getElementById('prod-cat').value = p.cat;
+  document.getElementById('prod-precio').value = p.precio;
+  document.getElementById('prod-estado').value = p.estado;
+  document.getElementById('modal-prod-title').textContent = '✏️ Editar producto';
+  openModal('modal-prod');
+}
+
+function getArrByCat(cat) {
+  if (cat === 'Comidas') return COMIDAS;
+  return ADICIONES;
+}
+
+function findProductoArr(id) {
+  if (COMIDAS.find(x => x.id === id)) return COMIDAS;
+  return ADICIONES;
+}
+
+function toggleProducto(id) {
+  const arr = findProductoArr(id);
+  const p = arr.find(x => x.id === id);
+  if (p) { p.estado = p.estado === 'activo' ? 'inactivo' : 'activo'; }
+  renderProdTable();
+  showToast(`Producto ${p.estado === 'activo' ? 'activado' : 'desactivado'}`);
+}
+
+function deleteProducto(id) {
+  if (!confirm('¿Eliminar este producto del menú?')) return;
+  COMIDAS = COMIDAS.filter(x => x.id !== id);
+  ADICIONES = ADICIONES.filter(x => x.id !== id);
+  renderProdTable();
+  showToast('Producto eliminado');
+}
+
+function saveProducto() {
+  const nombre = document.getElementById('prod-nombre').value.trim();
+  const icon = document.getElementById('prod-icon').value.trim() || '🍽️';
+  const cat = document.getElementById('prod-cat').value;
+  const precio = parseFloat(document.getElementById('prod-precio').value) || 0;
+  const estado = document.getElementById('prod-estado').value;
+  if (!nombre) { showToast('Ingresa el nombre del producto', 'err'); return; }
+  if (!precio) { showToast('Ingresa un precio válido', 'err'); return; }
+
+  const editId = document.getElementById('prod-edit-id').value;
+  if (editId) {
+    const oldArr = findProductoArr(editId);
+    const p = oldArr.find(x => x.id === editId);
+    if (p) {
+      const catChanged = p.cat !== cat;
+      p.nombre = nombre; p.icon = icon; p.precio = precio; p.estado = estado;
+      if (catChanged) {
+        // Mover a la categoría correcta
+        COMIDAS = COMIDAS.filter(x => x.id !== editId);
+        ADICIONES = ADICIONES.filter(x => x.id !== editId);
+        p.cat = cat;
+        getArrByCat(cat).push(p);
+      }
+    }
+    showToast('Producto actualizado');
+  } else {
+    const newProd = { id: 'p' + (++nextId), nombre, icon, cat, precio, estado };
+    getArrByCat(cat).push(newProd);
+    showToast('Producto agregado al menú');
+  }
+  closeModal('modal-prod');
+  renderProdTable();
+}
+
+// ═══════════════════════════════════
+// ADMIN — VENTAS
+// ═══════════════════════════════════
+
+function renderVentasPanel() {
+  const total = historial.reduce((s, h) => s + h.total, 0);
+  const efectivo = historial.filter(h => h.pago === 'Efectivo').reduce((s, h) => s + h.total, 0);
+  const tarjeta = historial.filter(h => h.pago !== 'Efectivo').reduce((s, h) => s + h.total, 0);
+  const ticket = historial.length ? total / historial.length : 0;
+
+  document.getElementById('ventas-metrics').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Total ventas</div><div class="metric-value" style="font-size:18px;">${fmt(total)}</div></div>
+    <div class="metric-card"><div class="metric-label">Pedidos</div><div class="metric-value brand">${historial.length}</div></div>
+    <div class="metric-card"><div class="metric-label">Efectivo</div><div class="metric-value" style="font-size:18px; color:var(--green);">${fmt(efectivo)}</div></div>
+    <div class="metric-card"><div class="metric-label">Digital / Tarjeta</div><div class="metric-value" style="font-size:18px; color:var(--blue);">${fmt(tarjeta)}</div></div>`;
+
+  const lista = document.getElementById('ventas-lista');
+  if (!historial.length) {
+    lista.innerHTML = `<div class="no-hist"><span class="no-hist-icon">📭</span>Aún no hay ventas registradas</div>`;
+  } else {
+    lista.innerHTML = historial.map((h, i) => `
+      <div class="hist-row" onclick="verFacturaHist(${i})">
+        <div class="hist-info">
+          <div class="name">${h.num} · ${h.cliente.nombre}</div>
+          <div class="meta">${h.fecha} ${h.hora} · ${h.cliente.mesa} · ${h.pago} · Cajero: ${h.cajero || '—'}</div>
+        </div>
+        <div class="hist-right">
+          <span class="hist-amount">${fmt(h.total)}</span>
+          <span style="color:var(--text3); font-size:18px;">›</span>
+        </div>
+      </div>`).join('');
+  }
+}
+
+// ═══════════════════════════════════
+// ADMIN — USUARIOS
+// ═══════════════════════════════════
+
+function renderUsersPanel() {
+  const lista = document.getElementById('users-lista');
+  lista.innerHTML = USERS.map(u => `
+    <div class="user-row">
+      <div class="user-avatar ${u.rol === 'admin' ? 'avatar-admin' : 'avatar-cajero'}">
+        ${u.rol === 'admin' ? '🛡️' : '💳'}
+      </div>
+      <div class="user-info">
+        <div class="uname">${u.nombre}</div>
+        <div class="umeta">@${u.login} · <span class="badge ${u.rol === 'admin' ? 'badge-blue' : 'badge-green'}">${u.rol}</span></div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-sm" onclick="editUser('${u.id}')">✏️ Editar</button>
+        ${u.id !== currentUser?.id ? `<button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">🗑</button>` : '<span class="badge badge-brand">Tú</span>'}
+      </div>
+    </div>`).join('');
+}
+
+function openUserModal() {
+  document.getElementById('user-edit-id').value = '';
+  document.getElementById('user-nombre').value = '';
+  document.getElementById('user-login').value = '';
+  document.getElementById('user-pass').value = '';
+  document.getElementById('user-rol').value = 'cajero';
+  document.getElementById('modal-user-title').textContent = '👤 Nuevo usuario';
+  openModal('modal-user');
+}
+
+function editUser(id) {
+  const u = USERS.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('user-edit-id').value = id;
+  document.getElementById('user-nombre').value = u.nombre;
+  document.getElementById('user-login').value = u.login;
+  document.getElementById('user-pass').value = u.pass;
+  document.getElementById('user-rol').value = u.rol;
+  document.getElementById('modal-user-title').textContent = '✏️ Editar usuario';
+  openModal('modal-user');
+}
+
+function deleteUser(id) {
+  if (id === currentUser?.id) { showToast('No puedes eliminar tu propia cuenta', 'err'); return; }
+  if (!confirm('¿Eliminar este usuario?')) return;
+  USERS = USERS.filter(u => u.id !== id);
+  renderUsersPanel();
+  showToast('Usuario eliminado');
+}
+
+function saveUser() {
+  const nombre = document.getElementById('user-nombre').value.trim();
+  const login = document.getElementById('user-login').value.trim();
+  const pass = document.getElementById('user-pass').value.trim();
+  const rol = document.getElementById('user-rol').value;
+  if (!nombre || !login || !pass) { showToast('Completa todos los campos', 'err'); return; }
+
+  const editId = document.getElementById('user-edit-id').value;
+  if (editId) {
+    const u = USERS.find(x => x.id === editId);
+    if (u) { u.nombre = nombre; u.login = login; u.pass = pass; u.rol = rol; }
+    showToast('Usuario actualizado');
+  } else {
+    if (USERS.find(u => u.login === login)) { showToast('Ese usuario ya existe', 'err'); return; }
+    USERS.push({ id: 'u' + (++nextId), nombre, login, pass, rol });
+    showToast('Usuario creado');
+  }
+  closeModal('modal-user');
+  renderUsersPanel();
+}
+
+// ═══════════════════════════════════
+// MODALES UTILS
+// ═══════════════════════════════════
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Cerrar modal al hacer clic fuera
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
